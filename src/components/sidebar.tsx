@@ -1,52 +1,69 @@
 "use client"
 
-import { Home, CheckSquare, BarChart2, Settings, LogOut, MessageSquare, Compass, Star, User } from "lucide-react"
+import { Home, BarChart2, Users, Settings, LogOut, Layers, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-
-const navItems = [
-    { icon: Home, label: "Home", active: true },
-    { icon: MessageSquare, label: "Messages", active: false },
-    { icon: Compass, label: "Explore", active: false },
-    { icon: Star, label: "Favorites", active: false },
-]
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useMusic } from "@/providers/music-provider"
 
 export function Sidebar() {
+    const pathname = usePathname()
+    const { themeColor } = useMusic()
+
+    const navItems = [
+        { id: "home", href: "/", icon: Home, label: "Home" },
+        { id: "analytics", href: "/analytics", icon: BarChart2, label: "Analytics" },
+        { id: "team", href: "/team", icon: Users, label: "Team" },
+        { id: "projects", href: "/projects", icon: Layers, label: "Projects" },
+        { id: "pages", href: "/pages", icon: FileText, label: "Pages" },
+        { id: "settings", href: "/settings", icon: Settings, label: "Settings" },
+    ]
+
+    const isActive = (href: string) => {
+        if (href === "/") return pathname === "/"
+        return pathname.startsWith(href)
+    }
+
     return (
-        <aside className="w-16 lg:w-20 bg-gray-100 dark:bg-neutral-900 flex flex-col items-center py-6 gap-6 z-50 sticky top-0 h-screen shrink-0">
-            <div className="h-10 w-10 rounded-full bg-[#EDFD6D] flex items-center justify-center text-black font-bold text-lg shadow-sm">
-                U
+        <aside className="h-screen sticky top-0 w-20 flex flex-col items-center py-8 bg-white dark:bg-neutral-900 border-r border-gray-100 dark:border-neutral-800 shrink-0 z-40 transition-colors duration-500">
+            <div className="mb-10">
+                <div
+                    className="h-10 w-10 bg-black rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-xl transition-colors duration-500"
+                    style={themeColor ? { backgroundColor: themeColor } : undefined}
+                >
+                    U
+                </div>
             </div>
 
-            <nav className="flex-1 flex flex-col gap-4 w-full px-2">
-                {navItems.map((item, index) => (
-                    <Button
-                        key={index}
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                            "w-full h-12 rounded-2xl transition-all duration-300",
-                            item.active
-                                ? "bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm"
-                                : "text-muted-foreground hover:bg-white/50 dark:hover:bg-neutral-800"
-                        )}
-                    >
-                        <item.icon className="h-5 w-5" />
-                        <span className="sr-only">{item.label}</span>
-                    </Button>
-                ))}
+            <nav className="flex-1 flex flex-col gap-4 w-full px-4">
+                {navItems.map((item) => {
+                    const active = isActive(item.href)
+                    return (
+                        <Link
+                            key={item.id}
+                            href={item.href}
+                            className={cn(
+                                "p-3 rounded-xl transition-all duration-300 group relative flex items-center justify-center",
+                                active
+                                    ? "text-white shadow-lg"
+                                    : "text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-white"
+                            )}
+                            style={active ? { backgroundColor: themeColor || '#000' } : undefined}
+                        >
+                            <item.icon className={cn("h-5 w-5", active && "animate-pulse")} />
 
-                <div className="my-auto" />
-
-                <div className="w-full h-px bg-gray-200 dark:bg-neutral-800" />
-
-                <Button variant="ghost" size="icon" className="w-full h-12 rounded-2xl text-muted-foreground hover:bg-white/50">
-                    <User className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="w-full h-12 rounded-2xl text-muted-foreground hover:bg-white/50">
-                    <Settings className="h-5 w-5" />
-                </Button>
+                            {/* Tooltip */}
+                            <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                {item.label}
+                            </span>
+                        </Link>
+                    )
+                })}
             </nav>
+
+            <button className="p-3 text-gray-400 hover:text-red-500 transition-colors mt-auto">
+                <LogOut className="h-5 w-5" />
+            </button>
         </aside>
     )
 }
